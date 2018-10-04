@@ -1,4 +1,4 @@
-package com.denis.morozov.retrobot.database.Insert
+package com.denis.morozov.retrobot.database.insert
 
 import com.denis.morozov.retrobot.database.SqlBuilder
 
@@ -16,5 +16,5 @@ class InsertSqlBuilder(private val descriptor: InsertDescriptor) : SqlBuilder
             return "INSERT INTO $table ($columns) VALUES ($placesForValues)"
         }
 
-    override val values: Array<Any> = descriptor.values
+    override val values: Iterable<Any>? = descriptor.values
 }

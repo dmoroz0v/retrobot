@@ -7,11 +7,20 @@ class UpdateStatement(private val connection: Connection,
 {
     fun execute(): Boolean
     {
-        return connection.prepareStatement(sqlBuilder.sql).use {
-            sqlBuilder.values.forEachIndexed { index, obj ->
-                it.setObject(index + 1, obj)
+        return connection.prepareStatement(sqlBuilder.sql).use { statement ->
+
+            sqlBuilder.values?.let { values ->
+
+                val iterator = values.iterator()
+                var index = 1
+                while (iterator.hasNext())
+                {
+                    statement.setObject(index, iterator.next())
+                    ++index
+                }
             }
-            it.execute()
+
+            statement.execute()
         }
     }
 }
