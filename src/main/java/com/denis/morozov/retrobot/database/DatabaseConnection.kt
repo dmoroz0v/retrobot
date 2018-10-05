@@ -2,7 +2,12 @@ package com.denis.morozov.retrobot.database
 
 import com.denis.morozov.retrobot.database.insert.*
 import com.denis.morozov.retrobot.database.delete.*
+import com.denis.morozov.retrobot.database.select.SelectDescriptor
+import com.denis.morozov.retrobot.database.select.SelectSqlBuilder
 import java.sql.DriverManager
+import java.sql.PreparedStatement
+import java.sql.ResultSet
+import java.sql.Statement
 
 class DatabaseConnection(connectionString: String): AutoCloseable
 {
@@ -10,18 +15,52 @@ class DatabaseConnection(connectionString: String): AutoCloseable
 
     fun insert(descriptor: InsertDescriptor): Boolean
     {
-        return update(InsertSqlBuilder(descriptor))
+        return prepareStatement(InsertSqlBuilder(descriptor)).use { it.execute() }
     }
 
     fun delete(descriptor: DeleteDescriptor): Boolean
     {
-        return update(DeleteSqlBuilder(descriptor))
+        return prepareStatement(DeleteSqlBuilder(descriptor)).use { it.execute() }
     }
 
-    private fun update(sqlBuilder: SqlBuilder): Boolean
+    fun select(descriptor: SelectDescriptor): List<Map<String, Any?>>
     {
-        val updateStatement = UpdateStatement(connection, sqlBuilder)
-        return updateStatement.execute()
+        return prepareStatement(SelectSqlBuilder(descriptor)).use { statement ->
+            statement.executeQuery().use { resultSet ->
+                val metaData = resultSet.metaData
+                val columnLabels = List<String>(metaData.columnCount) {
+                    metaData.getColumnLabel(it + 1)
+                }
+
+                val result: MutableList<Map<String, Any?>> = mutableListOf()
+
+                while (resultSet.next())
+                {
+                    val row: MutableMap<String, Any?> = mutableMapOf()
+                    columnLabels.forEach { columnName ->
+                        row[columnName] = resultSet.getObject(columnName)
+                    }
+                    result.add(row)
+                }
+
+                result
+            }
+        }
+    }
+
+    private fun prepareStatement(sqlBuilder: SqlBuilder): PreparedStatement
+    {
+        val statement = connection.prepareStatement(sqlBuilder.sql)
+        sqlBuilder.values?.let { values ->
+            val iterator = values.iterator()
+            var index = 1
+            while (iterator.hasNext())
+            {
+                statement.setObject(index, iterator.next())
+                ++index
+            }
+        }
+        return statement
     }
 
     override fun close() {

@@ -15,7 +15,8 @@ class ConditionSqlBuilder(private val descriptor: ConditionDescriptor) : SqlBuil
 
     private fun toSql(descriptor: ConditionDescriptor): String = when (descriptor)
     {
-        is Equal -> "(" + descriptor.name + " = ?)"
+        is Equal -> "(" + descriptor.field + " = ?)"
+        is Relationship -> "(" + descriptor.field1 + " = " + descriptor.field2 + ")"
         is And -> "(" + descriptor.elements.map { toSql(it) }.joinToString(" AND ") + ")"
         is Or -> "(" + descriptor.elements.map { toSql(it) }.joinToString(" OR ") + ")"
         is Not -> "(NOT"  + toSql(descriptor.element) + ")"
@@ -26,6 +27,7 @@ class ConditionSqlBuilder(private val descriptor: ConditionDescriptor) : SqlBuil
         when (descriptor)
         {
             is Equal -> list.add(descriptor.value)
+            is Relationship -> return
             is And -> descriptor.elements.forEach { fillList(list, it) }
             is Or -> descriptor.elements.forEach { fillList(list, it) }
             is Not -> fillList(list, descriptor.element)
