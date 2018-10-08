@@ -6,8 +6,6 @@ import com.denis.morozov.retrobot.database.select.SelectDescriptor
 import com.denis.morozov.retrobot.database.select.SelectSqlBuilder
 import java.sql.DriverManager
 import java.sql.PreparedStatement
-import java.sql.ResultSet
-import java.sql.Statement
 
 class DatabaseConnection(connectionString: String): AutoCloseable
 {

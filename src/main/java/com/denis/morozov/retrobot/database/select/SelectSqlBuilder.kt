@@ -22,5 +22,20 @@ class SelectSqlBuilder(private val descriptor: SelectDescriptor) : SqlBuilder
             return "SELECT $columns FROM $table $joins $where"
         }
 
-    override val values: Iterable<Any>? = emptyList()
+    override val values: Iterable<Any>?
+        get() {
+            val result: MutableList<Any> = mutableListOf()
+
+            joinsSqlBuilders?.forEach { joinSqlBuilder ->
+                joinSqlBuilder.values?.let {
+                    result.addAll(it)
+                }
+            }
+
+            conditionSqlBuilder?.values?.let {
+                result.addAll(it)
+            }
+
+            return result
+        }
 }

@@ -1,12 +1,10 @@
 package com.denis.morozov.retrobot
 
+import com.denis.morozov.retrobot.data.RetrosStorage
 import com.denis.morozov.retrobot.database.*
 import com.denis.morozov.retrobot.database.condition.Equal
-import com.denis.morozov.retrobot.database.condition.Relationship
 import com.denis.morozov.retrobot.database.delete.DeleteDescriptor
 import com.denis.morozov.retrobot.database.insert.*
-import com.denis.morozov.retrobot.database.join.JoinDescriptor
-import com.denis.morozov.retrobot.database.select.SelectDescriptor
 import com.microsoft.azure.functions.*
 import com.microsoft.azure.functions.annotation.*
 import java.util.*
@@ -22,18 +20,24 @@ class DatabaseEndpoints
     {
         context.logger.info("httpMethod " + request.httpMethod)
         val name = request.queryParameters["name"]
-        val user_id = request.queryParameters["user_id"]
-        if (name != null && user_id != null)
+        val userId = request.queryParameters["user_id"]
+        if (name != null && userId != null)
         {
-            DatabaseConnection(connectionString).use {
-                val insertDescriptor = InsertDescriptor()
-                insertDescriptor.table = "Retros"
-                insertDescriptor.columns = listOf("identifier", "name", "user_id")
-                insertDescriptor.values = listOf(UUID.randomUUID().toString(), name, user_id)
-                it.insert(insertDescriptor)
+            try {
+                DatabaseConnection(connectionString).use {
+                    val insertDescriptor = InsertDescriptor()
+                    insertDescriptor.table = "Retros"
+                    insertDescriptor.columns = listOf("identifier", "name", "user_id", "deleted")
+                    insertDescriptor.values = listOf(UUID.randomUUID().toString(), name, userId, 0)
+                    it.insert(insertDescriptor)
+                }
+                return request.createResponseBuilder(HttpStatus.OK).body("OK").build()
+            }
+            catch (e: Exception) {
+                return request.createResponseBuilder(HttpStatus.OK).body(e.message).build()
             }
         }
-        return request.createResponseBuilder(HttpStatus.OK).build()
+        return request.createResponseBuilder(HttpStatus.OK).body("reference user_id and name").build()
     }
 
     @FunctionName("deleteRetro")
@@ -61,37 +65,30 @@ class DatabaseEndpoints
                      context: ExecutionContext): HttpResponseMessage
     {
         context.logger.info("httpMethod " + request.httpMethod)
-        try {
-            return DatabaseConnection(connectionString).use {
-                val selectDescriptor = SelectDescriptor()
-                selectDescriptor.table = "Retros"
-                val joinDescriptor = JoinDescriptor()
-                joinDescriptor.type = JoinDescriptor.Type.LEFT
-                joinDescriptor.table = "Messages"
-                joinDescriptor.on = Relationship("Retros.identifier", "Messages.retro_identifier")
-                selectDescriptor.joins = listOf(joinDescriptor)
-                val result  = it.select(selectDescriptor)
 
-                val resultString = if (result.isEmpty())
-                {
-                    "Empty"
-                }
-                else
-                {
-                    val titles = result[0].map { it.key }.joinToString(" | ")
-                    val valuesString = result
-                            .map {
-                                it.map { "${it.value}" }.joinToString(" | ")
-                            }
-                            .joinToString("\n")
-                    titles + "\n" + valuesString
-                }
+        val userId = request.queryParameters["user_id"]
 
-                request.createResponseBuilder(HttpStatus.OK).body(resultString).build()
+        if (userId != null)
+        {
+            try {
+                return RetrosStorage(DatabaseConnection(connectionString)).use {
+                    val result = it.retros(userId)
+
+                    val resultString = if (result.isEmpty()) {
+                        "Empty"
+                    } else {
+                        result.map {
+                            "${it.identifier} | ${it.name} | ${it.deleted} | ${it.messages.count()}"
+                        }.joinToString("\n")
+                    }
+
+                    request.createResponseBuilder(HttpStatus.OK).body(resultString).build()
+                }
+            } catch (e: Exception) {
+                return request.createResponseBuilder(HttpStatus.OK).body(e.message).build()
             }
         }
-        catch (e: Exception) {
-            return request.createResponseBuilder(HttpStatus.INTERNAL_SERVER_ERROR).build()
-        }
+
+        return request.createResponseBuilder(HttpStatus.OK).body("reference user_id").build()
     }
 }
