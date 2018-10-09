@@ -21,23 +21,22 @@ class DatabaseEndpoints
         context.logger.info("httpMethod " + request.httpMethod)
         val name = request.queryParameters["name"]
         val userId = request.queryParameters["user_id"]
-        if (name != null && userId != null)
+        val result = if (name != null && userId != null)
         {
             try {
-                DatabaseConnection(connectionString).use {
-                    val insertDescriptor = InsertDescriptor()
-                    insertDescriptor.table = "Retros"
-                    insertDescriptor.columns = listOf("identifier", "name", "user_id", "deleted")
-                    insertDescriptor.values = listOf(UUID.randomUUID().toString(), name, userId, 0)
-                    it.insert(insertDescriptor)
+                RetrosStorage(DatabaseConnection(connectionString)).use {
+                    it.create(name, userId)
+                    "OK"
                 }
-                return request.createResponseBuilder(HttpStatus.OK).body("OK").build()
             }
             catch (e: Exception) {
-                return request.createResponseBuilder(HttpStatus.OK).body(e.message).build()
+                e.message
             }
+        } else {
+            "reference user_id and name"
         }
-        return request.createResponseBuilder(HttpStatus.OK).body("reference user_id and name").build()
+
+        return request.createResponseBuilder(HttpStatus.OK).body(result).build()
     }
 
     @FunctionName("deleteRetro")
@@ -47,16 +46,20 @@ class DatabaseEndpoints
     {
         context.logger.info("httpMethod " + request.httpMethod)
         val identifier = request.queryParameters["identifier"]
-        if (identifier != null)
+        val result = if (identifier != null)
         {
-            DatabaseConnection(connectionString).use {
-                val deleteDescriptor = DeleteDescriptor()
-                deleteDescriptor.table = "Retros"
-                deleteDescriptor.where = Equal("identifier", identifier)
-                it.delete(deleteDescriptor)
+            try {
+                RetrosStorage(DatabaseConnection(connectionString)).use {
+                    it.delete(identifier)
+                    "OK"
+                }
+            } catch (e: Exception) {
+                e.message
             }
+        } else {
+            "reference identifier"
         }
-        return request.createResponseBuilder(HttpStatus.OK).build()
+        return request.createResponseBuilder(HttpStatus.OK).body(result).build()
     }
 
     @FunctionName("selectRetros")
@@ -68,27 +71,57 @@ class DatabaseEndpoints
 
         val userId = request.queryParameters["user_id"]
 
-        if (userId != null)
-        {
+        val result = if (userId != null) {
             try {
-                return RetrosStorage(DatabaseConnection(connectionString)).use {
+                RetrosStorage(DatabaseConnection(connectionString)).use {
                     val result = it.retros(userId)
 
-                    val resultString = if (result.isEmpty()) {
+                    if (result.isEmpty()) {
                         "Empty"
                     } else {
                         result.map {
                             "${it.identifier} | ${it.name} | ${it.deleted} | ${it.messages.count()}"
                         }.joinToString("\n")
                     }
-
-                    request.createResponseBuilder(HttpStatus.OK).body(resultString).build()
                 }
             } catch (e: Exception) {
-                return request.createResponseBuilder(HttpStatus.OK).body(e.message).build()
+                e.message
             }
+        } else {
+            "reference user_id"
         }
 
-        return request.createResponseBuilder(HttpStatus.OK).body("reference user_id").build()
+        return request.createResponseBuilder(HttpStatus.OK).body(result).build()
+    }
+
+    @FunctionName("selectRetro")
+    fun selectRetro(@HttpTrigger(name = "req", methods = arrayOf(HttpMethod.GET), authLevel = AuthorizationLevel.ANONYMOUS)
+                    request: HttpRequestMessage<String>,
+                    context: ExecutionContext): HttpResponseMessage
+    {
+        context.logger.info("httpMethod " + request.httpMethod)
+
+        val identifier = request.queryParameters["identifier"]
+
+        val result = if (identifier != null)
+        {
+            try {
+                RetrosStorage(DatabaseConnection(connectionString)).use {
+                    val retro = it.retro(identifier)
+
+                    if (retro != null) {
+                        "${retro.identifier} | ${retro.name} | ${retro.deleted} | ${retro.messages.count()}"
+                    } else {
+                        "Empty"
+                    }
+                }
+            } catch (e: Exception) {
+                e.message
+            }
+        } else {
+            "reference identifier"
+        }
+
+        return request.createResponseBuilder(HttpStatus.OK).body(result).build()
     }
 }

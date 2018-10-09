@@ -4,8 +4,11 @@ import com.denis.morozov.retrobot.database.DatabaseConnection
 import com.denis.morozov.retrobot.database.condition.Equal
 import com.denis.morozov.retrobot.database.condition.Or
 import com.denis.morozov.retrobot.database.condition.Relationship
+import com.denis.morozov.retrobot.database.delete.DeleteDescriptor
+import com.denis.morozov.retrobot.database.insert.InsertDescriptor
 import com.denis.morozov.retrobot.database.join.JoinDescriptor
 import com.denis.morozov.retrobot.database.select.SelectDescriptor
+import java.util.*
 
 class RetrosStorage(private val connection: DatabaseConnection): AutoCloseable
 {
@@ -39,6 +42,43 @@ class RetrosStorage(private val connection: DatabaseConnection): AutoCloseable
         }
 
         return retros
+    }
+
+    fun create(name: String, userId: String): Retro
+    {
+        val identifier = UUID.randomUUID().toString()
+        val insertDescriptor = InsertDescriptor()
+        insertDescriptor.table = "Retros"
+        insertDescriptor.columns = listOf("identifier", "name", "user_id", "deleted")
+        insertDescriptor.values = listOf(identifier, name, userId, 0)
+
+        return Retro(identifier, name, false, emptyList())
+    }
+
+    fun retro(identifier: String): Retro?
+    {
+        val selectDescriptor = SelectDescriptor()
+        selectDescriptor.table = "Retros"
+        selectDescriptor.where = Equal("identifier", identifier)
+
+        val result  = connection.select(selectDescriptor)
+
+        return result.firstOrNull()?.let {
+            Retro(
+                    it["identifier"] as String,
+                    it["name"] as String,
+                    (it["deleted"] as Int == 1),
+                    messages = emptyList()
+            )
+        }
+    }
+
+    fun delete(identifier: String)
+    {
+        val deleteDescriptor = DeleteDescriptor()
+        deleteDescriptor.table = "Retros"
+        deleteDescriptor.where = Equal("identifier", identifier)
+        connection.delete(deleteDescriptor)
     }
 
     override fun close() {
