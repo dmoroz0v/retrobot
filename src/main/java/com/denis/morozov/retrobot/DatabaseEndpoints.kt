@@ -10,7 +10,7 @@ class DatabaseEndpoints
     private val connectionString = ""
 
     @FunctionName("createRetro")
-    fun createRetro(@HttpTrigger(name = "req", methods = arrayOf(HttpMethod.GET), authLevel = AuthorizationLevel.ANONYMOUS)
+    fun createRetro(@HttpTrigger(name = "req", methods = arrayOf(HttpMethod.GET), authLevel = AuthorizationLevel.ADMIN)
                     request: HttpRequestMessage<String>,
                     context: ExecutionContext): HttpResponseMessage
     {
@@ -35,7 +35,7 @@ class DatabaseEndpoints
     }
 
     @FunctionName("deleteRetro")
-    fun deleteRetro(@HttpTrigger(name = "req", methods = arrayOf(HttpMethod.GET), authLevel = AuthorizationLevel.ANONYMOUS)
+    fun deleteRetro(@HttpTrigger(name = "req", methods = arrayOf(HttpMethod.GET), authLevel = AuthorizationLevel.ADMIN)
                     request: HttpRequestMessage<String>,
                     context: ExecutionContext): HttpResponseMessage
     {
@@ -57,7 +57,7 @@ class DatabaseEndpoints
     }
 
     @FunctionName("selectRetros")
-    fun selectRetros(@HttpTrigger(name = "req", methods = arrayOf(HttpMethod.GET), authLevel = AuthorizationLevel.ANONYMOUS)
+    fun selectRetros(@HttpTrigger(name = "req", methods = arrayOf(HttpMethod.GET), authLevel = AuthorizationLevel.ADMIN)
                      request: HttpRequestMessage<String>,
                      context: ExecutionContext): HttpResponseMessage
     {
@@ -89,7 +89,7 @@ class DatabaseEndpoints
     }
 
     @FunctionName("selectRetro")
-    fun selectRetro(@HttpTrigger(name = "req", methods = arrayOf(HttpMethod.GET), authLevel = AuthorizationLevel.ANONYMOUS)
+    fun selectRetro(@HttpTrigger(name = "req", methods = arrayOf(HttpMethod.GET), authLevel = AuthorizationLevel.ADMIN)
                     request: HttpRequestMessage<String>,
                     context: ExecutionContext): HttpResponseMessage
     {
@@ -119,7 +119,7 @@ class DatabaseEndpoints
     }
 
     @FunctionName("selectMessages")
-    fun selectMessages(@HttpTrigger(name = "req", methods = arrayOf(HttpMethod.GET), authLevel = AuthorizationLevel.ANONYMOUS)
+    fun selectMessages(@HttpTrigger(name = "req", methods = arrayOf(HttpMethod.GET), authLevel = AuthorizationLevel.ADMIN)
                        request: HttpRequestMessage<String>,
                        context: ExecutionContext): HttpResponseMessage
     {
@@ -153,7 +153,7 @@ class DatabaseEndpoints
     }
 
     @FunctionName("createMessage")
-    fun createMessage(@HttpTrigger(name = "req", methods = arrayOf(HttpMethod.GET), authLevel = AuthorizationLevel.ANONYMOUS)
+    fun createMessage(@HttpTrigger(name = "req", methods = arrayOf(HttpMethod.GET), authLevel = AuthorizationLevel.ADMIN)
                       request: HttpRequestMessage<String>,
                       context: ExecutionContext): HttpResponseMessage
     {
@@ -184,7 +184,7 @@ class DatabaseEndpoints
     }
 
     @FunctionName("joinUser")
-    fun joinUser(@HttpTrigger(name = "req", methods = arrayOf(HttpMethod.GET), authLevel = AuthorizationLevel.ANONYMOUS)
+    fun joinUser(@HttpTrigger(name = "req", methods = arrayOf(HttpMethod.GET), authLevel = AuthorizationLevel.ADMIN)
                  request: HttpRequestMessage<String>,
                  context: ExecutionContext): HttpResponseMessage
     {
