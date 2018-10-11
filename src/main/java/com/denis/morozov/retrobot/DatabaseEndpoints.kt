@@ -1,13 +1,9 @@
 package com.denis.morozov.retrobot
 
-import com.denis.morozov.retrobot.data.RetrosStorage
+import com.denis.morozov.retrobot.data.*
 import com.denis.morozov.retrobot.database.*
-import com.denis.morozov.retrobot.database.condition.Equal
-import com.denis.morozov.retrobot.database.delete.DeleteDescriptor
-import com.denis.morozov.retrobot.database.insert.*
 import com.microsoft.azure.functions.*
 import com.microsoft.azure.functions.annotation.*
-import java.util.*
 
 class DatabaseEndpoints
 {
@@ -21,11 +17,10 @@ class DatabaseEndpoints
         context.logger.info("httpMethod " + request.httpMethod)
         val name = request.queryParameters["name"]
         val userId = request.queryParameters["user_id"]
-        val result = if (name != null && userId != null)
-        {
+        val result = if (name != null && userId != null) {
             try {
-                RetrosStorage(DatabaseConnection(connectionString)).use {
-                    it.create(name, userId)
+                DatabaseConnection(connectionString).use {
+                    RetrosStorage(it).create(name, userId)
                     "OK"
                 }
             }
@@ -46,11 +41,10 @@ class DatabaseEndpoints
     {
         context.logger.info("httpMethod " + request.httpMethod)
         val identifier = request.queryParameters["identifier"]
-        val result = if (identifier != null)
-        {
+        val result = if (identifier != null) {
             try {
-                RetrosStorage(DatabaseConnection(connectionString)).use {
-                    it.delete(identifier)
+                DatabaseConnection(connectionString).use {
+                    RetrosStorage(it).delete(identifier)
                     "OK"
                 }
             } catch (e: Exception) {
@@ -73,8 +67,8 @@ class DatabaseEndpoints
 
         val result = if (userId != null) {
             try {
-                RetrosStorage(DatabaseConnection(connectionString)).use {
-                    val result = it.retros(userId)
+                DatabaseConnection(connectionString).use {
+                    val result = RetrosStorage(it).retros(userId)
 
                     if (result.isEmpty()) {
                         "Empty"
@@ -103,11 +97,10 @@ class DatabaseEndpoints
 
         val identifier = request.queryParameters["identifier"]
 
-        val result = if (identifier != null)
-        {
+        val result = if (identifier != null) {
             try {
-                RetrosStorage(DatabaseConnection(connectionString)).use {
-                    val retro = it.retro(identifier)
+                DatabaseConnection(connectionString).use {
+                    val retro = RetrosStorage(it).retro(identifier)
 
                     if (retro != null) {
                         "${retro.identifier} | ${retro.name} | ${retro.deleted} | ${retro.messages.count()}"
@@ -120,6 +113,96 @@ class DatabaseEndpoints
             }
         } else {
             "reference identifier"
+        }
+
+        return request.createResponseBuilder(HttpStatus.OK).body(result).build()
+    }
+
+    @FunctionName("selectMessages")
+    fun selectMessages(@HttpTrigger(name = "req", methods = arrayOf(HttpMethod.GET), authLevel = AuthorizationLevel.ANONYMOUS)
+                       request: HttpRequestMessage<String>,
+                       context: ExecutionContext): HttpResponseMessage
+    {
+        context.logger.info("httpMethod " + request.httpMethod)
+
+        val retroIdentifier = request.queryParameters["retro_identifier"]
+        val messageUserId = request.queryParameters["message_user_id"]
+        val retroUserId = request.queryParameters["retro_user_id"]
+
+        val result = if (retroIdentifier != null) {
+            try {
+                DatabaseConnection(connectionString).use {
+                    val result = MessagesStorage(it).messages(retroIdentifier, messageUserId, retroUserId)
+
+                    if (result.isEmpty()) {
+                        "Empty"
+                    } else {
+                        result.map {
+                            "${it.identifier} | ${it.text}"
+                        }.joinToString("\n")
+                    }
+                }
+            } catch (e: Exception) {
+                e.message
+            }
+        } else {
+            "reference retro_identifier is required. message_user_id is optional. retro_user_id is optional"
+        }
+
+        return request.createResponseBuilder(HttpStatus.OK).body(result).build()
+    }
+
+    @FunctionName("createMessage")
+    fun createMessage(@HttpTrigger(name = "req", methods = arrayOf(HttpMethod.GET), authLevel = AuthorizationLevel.ANONYMOUS)
+                      request: HttpRequestMessage<String>,
+                      context: ExecutionContext): HttpResponseMessage
+    {
+        context.logger.info("httpMethod " + request.httpMethod)
+        val text = request.queryParameters["text"]
+        val retroIdentifier = request.queryParameters["retro_identifier"]
+        val userId = request.queryParameters["user_id"]
+        val result = if (text != null && retroIdentifier != null && userId != null) {
+            try {
+                DatabaseConnection(connectionString).use {
+                    val userRetros = RetrosStorage(it).retros(userId)
+                    if (userRetros.firstOrNull { it.identifier == retroIdentifier } != null) {
+                        MessagesStorage(it).create(text, retroIdentifier, userId)
+                        "OK"
+                    } else {
+                        "User not joined to retro"
+                    }
+                }
+            }
+            catch (e: Exception) {
+                e.message
+            }
+        } else {
+            "reference text and retro_identifier and user_id"
+        }
+
+        return request.createResponseBuilder(HttpStatus.OK).body(result).build()
+    }
+
+    @FunctionName("joinUser")
+    fun joinUser(@HttpTrigger(name = "req", methods = arrayOf(HttpMethod.GET), authLevel = AuthorizationLevel.ANONYMOUS)
+                 request: HttpRequestMessage<String>,
+                 context: ExecutionContext): HttpResponseMessage
+    {
+        context.logger.info("httpMethod " + request.httpMethod)
+        val identifier = request.queryParameters["identifier"]
+        val userId = request.queryParameters["user_id"]
+        val result = if (identifier != null && userId != null) {
+            try {
+                DatabaseConnection(connectionString).use {
+                    RetrosStorage(it).join(userId, identifier)
+                    "OK"
+                }
+            }
+            catch (e: Exception) {
+                e.message
+            }
+        } else {
+            "reference identifier and user_id"
         }
 
         return request.createResponseBuilder(HttpStatus.OK).body(result).build()

@@ -10,7 +10,7 @@ import com.denis.morozov.retrobot.database.join.JoinDescriptor
 import com.denis.morozov.retrobot.database.select.SelectDescriptor
 import java.util.*
 
-class RetrosStorage(private val connection: DatabaseConnection): AutoCloseable
+class RetrosStorage(private val connection: DatabaseConnection)
 {
     fun retros(userId: String): List<Retro>
     {
@@ -52,6 +52,8 @@ class RetrosStorage(private val connection: DatabaseConnection): AutoCloseable
         insertDescriptor.columns = listOf("identifier", "name", "user_id", "deleted")
         insertDescriptor.values = listOf(identifier, name, userId, 0)
 
+        connection.insert(insertDescriptor)
+
         return Retro(identifier, name, false, emptyList())
     }
 
@@ -81,7 +83,13 @@ class RetrosStorage(private val connection: DatabaseConnection): AutoCloseable
         connection.delete(deleteDescriptor)
     }
 
-    override fun close() {
-        connection.close()
+    fun join(userId: String, identifier: String)
+    {
+        val insertDescriptor = InsertDescriptor()
+        insertDescriptor.table = "Retros_Users"
+        insertDescriptor.columns = listOf("retro_identifier", "user_id")
+        insertDescriptor.values = listOf(identifier, userId)
+
+        connection.insert(insertDescriptor)
     }
 }
