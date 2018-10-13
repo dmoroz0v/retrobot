@@ -2,8 +2,8 @@ package com.denis.morozov.retrobot.database
 
 import com.denis.morozov.retrobot.database.insert.*
 import com.denis.morozov.retrobot.database.delete.*
-import com.denis.morozov.retrobot.database.select.SelectDescriptor
-import com.denis.morozov.retrobot.database.select.SelectSqlBuilder
+import com.denis.morozov.retrobot.database.select.*
+import com.denis.morozov.retrobot.database.update.*
 import java.sql.DriverManager
 import java.sql.PreparedStatement
 
@@ -14,6 +14,11 @@ class DatabaseConnection(connectionString: String): AutoCloseable
     fun insert(descriptor: InsertDescriptor): Boolean
     {
         return prepareStatement(InsertSqlBuilder(descriptor)).use { it.execute() }
+    }
+
+    fun update(descriptor: UpdateDescriptor): Boolean
+    {
+        return prepareStatement(UpdateSqlBuilder(descriptor)).use { it.execute() }
     }
 
     fun delete(descriptor: DeleteDescriptor): Boolean

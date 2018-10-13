@@ -8,6 +8,7 @@ import com.denis.morozov.retrobot.database.delete.DeleteDescriptor
 import com.denis.morozov.retrobot.database.insert.InsertDescriptor
 import com.denis.morozov.retrobot.database.join.JoinDescriptor
 import com.denis.morozov.retrobot.database.select.SelectDescriptor
+import com.denis.morozov.retrobot.database.update.UpdateDescriptor
 import java.util.*
 
 class RetrosStorage(private val connection: DatabaseConnection)
@@ -77,10 +78,11 @@ class RetrosStorage(private val connection: DatabaseConnection)
 
     fun delete(identifier: String)
     {
-        val deleteDescriptor = DeleteDescriptor()
-        deleteDescriptor.table = "Retros"
-        deleteDescriptor.where = Equal("identifier", identifier)
-        connection.delete(deleteDescriptor)
+        val updateDescriptor = UpdateDescriptor()
+        updateDescriptor.table = "Retros"
+        updateDescriptor.where = Equal("identifier", identifier)
+        updateDescriptor.values = mapOf("deleted" to 1)
+        connection.update(updateDescriptor)
     }
 
     fun join(userId: String, identifier: String)
