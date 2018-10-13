@@ -9,7 +9,7 @@ import java.util.*
 
 class MessagesStorage(private val connection: DatabaseConnection)
 {
-    fun messages(retroIdentifier: String, messageUserId: String? = null, retroUserId: String? = null): List<Message>
+    fun messages(retroIdentifier: String, messageUserId: Long? = null, retroUserId: Long? = null): List<Message>
     {
         val selectDescriptor = SelectDescriptor()
         selectDescriptor.table = "Messages"
@@ -59,7 +59,7 @@ class MessagesStorage(private val connection: DatabaseConnection)
         return retros
     }
 
-    fun create(text: String, retroIdentifier: String, userId: String): Message
+    fun create(text: String, retroIdentifier: String, userId: Long): Message
     {
         val identifier = UUID.randomUUID().toString()
         val insertDescriptor = InsertDescriptor()

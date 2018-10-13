@@ -13,9 +13,10 @@ import java.util.*
 
 class RetrosStorage(private val connection: DatabaseConnection)
 {
-    fun retros(userId: String): List<Retro>
+    fun retros(userId: Long): List<Retro>
     {
         val selectDescriptor = SelectDescriptor()
+        selectDescriptor.columns = listOf("Retros.identifier", "Retros.name", "Retros.deleted", "Retros.user_id")
         selectDescriptor.table = "Retros"
         val joinDescriptor = JoinDescriptor()
         joinDescriptor.type = JoinDescriptor.Type.LEFT
@@ -37,7 +38,7 @@ class RetrosStorage(private val connection: DatabaseConnection)
                             it["identifier"] as String,
                             it["name"] as String,
                             (it["deleted"] as Int == 1),
-                            messages = emptyList()
+                            it["user_id"] as Long
                     )
             )
         }
@@ -45,7 +46,7 @@ class RetrosStorage(private val connection: DatabaseConnection)
         return retros
     }
 
-    fun create(name: String, userId: String): Retro
+    fun create(name: String, userId: Long): Retro
     {
         val identifier = UUID.randomUUID().toString()
         val insertDescriptor = InsertDescriptor()
@@ -55,7 +56,7 @@ class RetrosStorage(private val connection: DatabaseConnection)
 
         connection.insert(insertDescriptor)
 
-        return Retro(identifier, name, false, emptyList())
+        return Retro(identifier, name, false, userId)
     }
 
     fun retro(identifier: String): Retro?
@@ -71,7 +72,7 @@ class RetrosStorage(private val connection: DatabaseConnection)
                     it["identifier"] as String,
                     it["name"] as String,
                     (it["deleted"] as Int == 1),
-                    messages = emptyList()
+                    it["user_id"] as Long
             )
         }
     }
@@ -85,7 +86,7 @@ class RetrosStorage(private val connection: DatabaseConnection)
         connection.update(updateDescriptor)
     }
 
-    fun join(userId: String, identifier: String)
+    fun join(userId: Long, identifier: String)
     {
         val insertDescriptor = InsertDescriptor()
         insertDescriptor.table = "Retros_Users"

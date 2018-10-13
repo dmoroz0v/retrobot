@@ -16,7 +16,7 @@ class DatabaseEndpoints
     {
         context.logger.info("httpMethod " + request.httpMethod)
         val name = request.queryParameters["name"]
-        val userId = request.queryParameters["user_id"]
+        val userId = request.queryParameters["user_id"]?.toLongOrNull()
         val result = if (name != null && userId != null) {
             try {
                 DatabaseConnection(connectionString).use {
@@ -63,7 +63,7 @@ class DatabaseEndpoints
     {
         context.logger.info("httpMethod " + request.httpMethod)
 
-        val userId = request.queryParameters["user_id"]
+        val userId = request.queryParameters["user_id"]?.toLongOrNull()
 
         val result = if (userId != null) {
             try {
@@ -74,7 +74,7 @@ class DatabaseEndpoints
                         "Empty"
                     } else {
                         result.map {
-                            "${it.identifier} | ${it.name} | ${it.deleted} | ${it.messages.count()}"
+                            "${it.identifier} | ${it.name} | ${it.deleted} | ${it.userId}"
                         }.joinToString("\n")
                     }
                 }
@@ -103,7 +103,7 @@ class DatabaseEndpoints
                     val retro = RetrosStorage(it).retro(identifier)
 
                     if (retro != null) {
-                        "${retro.identifier} | ${retro.name} | ${retro.deleted} | ${retro.messages.count()}"
+                        "${retro.identifier} | ${retro.name} | ${retro.deleted} | ${retro.userId}"
                     } else {
                         "Empty"
                     }
@@ -126,8 +126,8 @@ class DatabaseEndpoints
         context.logger.info("httpMethod " + request.httpMethod)
 
         val retroIdentifier = request.queryParameters["retro_identifier"]
-        val messageUserId = request.queryParameters["message_user_id"]
-        val retroUserId = request.queryParameters["retro_user_id"]
+        val messageUserId = request.queryParameters["message_user_id"]?.toLongOrNull()
+        val retroUserId = request.queryParameters["retro_user_id"]?.toLongOrNull()
 
         val result = if (retroIdentifier != null) {
             try {
@@ -160,7 +160,7 @@ class DatabaseEndpoints
         context.logger.info("httpMethod " + request.httpMethod)
         val text = request.queryParameters["text"]
         val retroIdentifier = request.queryParameters["retro_identifier"]
-        val userId = request.queryParameters["user_id"]
+        val userId = request.queryParameters["user_id"]?.toLongOrNull()
         val result = if (text != null && retroIdentifier != null && userId != null) {
             try {
                 DatabaseConnection(connectionString).use {
@@ -190,7 +190,7 @@ class DatabaseEndpoints
     {
         context.logger.info("httpMethod " + request.httpMethod)
         val identifier = request.queryParameters["identifier"]
-        val userId = request.queryParameters["user_id"]
+        val userId = request.queryParameters["user_id"]?.toLongOrNull()
         val result = if (identifier != null && userId != null) {
             try {
                 DatabaseConnection(connectionString).use {
