@@ -1,6 +1,12 @@
 package com.denis.morozov.retrobot.data
 
-data class Retro(val identifier: String,
+data class Retro(val identifier: ID,
                  val name: String,
                  val deleted: Boolean,
-                 val userId: Long)
+                 val userId: Long) {
+    data class ID(val rawValue: String)
+}
+
+fun String.toRetroID(): Retro.ID {
+    return Retro.ID(this)
+}

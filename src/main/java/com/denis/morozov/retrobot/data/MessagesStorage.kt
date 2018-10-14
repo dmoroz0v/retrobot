@@ -9,7 +9,7 @@ import java.util.*
 
 class MessagesStorage(private val connection: DatabaseConnection)
 {
-    fun messages(retroIdentifier: String, messageUserId: Long? = null, retroUserId: Long? = null): List<Message>
+    fun messages(retroIdentifier: Retro.ID, messageUserId: Long? = null, retroUserId: Long? = null): List<Message>
     {
         val selectDescriptor = SelectDescriptor()
         selectDescriptor.table = "Messages"
@@ -21,7 +21,7 @@ class MessagesStorage(private val connection: DatabaseConnection)
         retrosJoinDescriptor.table = "Retros"
         retrosJoinDescriptor.on = And(
                 Relationship("Retros.identifier", "Messages.retro_identifier"),
-                Equal("Retros.identifier", retroIdentifier)
+                Equal("Retros.identifier", retroIdentifier.rawValue)
         )
 
         joins.add(retrosJoinDescriptor)
@@ -50,25 +50,27 @@ class MessagesStorage(private val connection: DatabaseConnection)
 
         val result  = connection.select(selectDescriptor)
 
-        val retros: MutableList<Message> = mutableListOf()
+        val messages: MutableList<Message> = mutableListOf()
 
         result.forEach {
-            retros.add(Message(it["identifier"] as String, it["text"] as String))
+            messages.add(Message(
+                    Message.ID(it["identifier"] as String),
+                    it["text"] as String))
         }
 
-        return retros
+        return messages
     }
 
-    fun create(text: String, retroIdentifier: String, userId: Long): Message
+    fun create(text: String, retroIdentifier: Retro.ID, userId: Long): Message
     {
         val identifier = UUID.randomUUID().toString()
         val insertDescriptor = InsertDescriptor()
         insertDescriptor.table = "Messages"
         insertDescriptor.columns = listOf("identifier", "text", "user_id", "retro_identifier")
-        insertDescriptor.values = listOf(identifier, text, userId, retroIdentifier)
+        insertDescriptor.values = listOf(identifier, text, userId, retroIdentifier.rawValue)
 
         connection.insert(insertDescriptor)
 
-        return Message(identifier, text)
+        return Message(Message.ID(identifier), text)
     }
 }

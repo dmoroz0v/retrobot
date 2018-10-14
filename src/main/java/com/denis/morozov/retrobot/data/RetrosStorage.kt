@@ -35,7 +35,7 @@ class RetrosStorage(private val connection: DatabaseConnection)
         result.forEach {
             retros.add(
                     Retro(
-                            it["identifier"] as String,
+                            Retro.ID(it["identifier"] as String),
                             it["name"] as String,
                             (it["deleted"] as Int == 1),
                             it["user_id"] as Long
@@ -56,20 +56,20 @@ class RetrosStorage(private val connection: DatabaseConnection)
 
         connection.insert(insertDescriptor)
 
-        return Retro(identifier, name, false, userId)
+        return Retro(Retro.ID(identifier), name, false, userId)
     }
 
-    fun retro(identifier: String): Retro?
+    fun retro(identifier: Retro.ID): Retro?
     {
         val selectDescriptor = SelectDescriptor()
         selectDescriptor.table = "Retros"
-        selectDescriptor.where = Equal("identifier", identifier)
+        selectDescriptor.where = Equal("identifier", identifier.rawValue)
 
         val result  = connection.select(selectDescriptor)
 
         return result.firstOrNull()?.let {
             Retro(
-                    it["identifier"] as String,
+                    Retro.ID(it["identifier"] as String),
                     it["name"] as String,
                     (it["deleted"] as Int == 1),
                     it["user_id"] as Long
@@ -77,21 +77,21 @@ class RetrosStorage(private val connection: DatabaseConnection)
         }
     }
 
-    fun delete(identifier: String)
+    fun delete(identifier: Retro.ID)
     {
         val updateDescriptor = UpdateDescriptor()
         updateDescriptor.table = "Retros"
-        updateDescriptor.where = Equal("identifier", identifier)
+        updateDescriptor.where = Equal("identifier", identifier.rawValue)
         updateDescriptor.values = mapOf("deleted" to 1)
         connection.update(updateDescriptor)
     }
 
-    fun join(userId: Long, identifier: String)
+    fun join(userId: Long, identifier: Retro.ID)
     {
         val insertDescriptor = InsertDescriptor()
         insertDescriptor.table = "Retros_Users"
         insertDescriptor.columns = listOf("retro_identifier", "user_id")
-        insertDescriptor.values = listOf(identifier, userId)
+        insertDescriptor.values = listOf(identifier.rawValue, userId)
 
         connection.insert(insertDescriptor)
     }

@@ -40,7 +40,7 @@ class DatabaseEndpoints
                     context: ExecutionContext): HttpResponseMessage
     {
         context.logger.info("httpMethod " + request.httpMethod)
-        val identifier = request.queryParameters["identifier"]
+        val identifier = request.queryParameters["identifier"]?.toRetroID()
         val result = if (identifier != null) {
             try {
                 DatabaseConnection(connectionString).use {
@@ -74,7 +74,7 @@ class DatabaseEndpoints
                         "Empty"
                     } else {
                         result.map {
-                            "${it.identifier} | ${it.name} | ${it.deleted} | ${it.userId}"
+                            "${it.identifier.rawValue} | ${it.name} | ${it.deleted} | ${it.userId}"
                         }.joinToString("\n")
                     }
                 }
@@ -95,7 +95,7 @@ class DatabaseEndpoints
     {
         context.logger.info("httpMethod " + request.httpMethod)
 
-        val identifier = request.queryParameters["identifier"]
+        val identifier = request.queryParameters["identifier"]?.toRetroID()
 
         val result = if (identifier != null) {
             try {
@@ -103,7 +103,7 @@ class DatabaseEndpoints
                     val retro = RetrosStorage(it).retro(identifier)
 
                     if (retro != null) {
-                        "${retro.identifier} | ${retro.name} | ${retro.deleted} | ${retro.userId}"
+                        "${retro.identifier.rawValue} | ${retro.name} | ${retro.deleted} | ${retro.userId}"
                     } else {
                         "Empty"
                     }
@@ -125,7 +125,7 @@ class DatabaseEndpoints
     {
         context.logger.info("httpMethod " + request.httpMethod)
 
-        val retroIdentifier = request.queryParameters["retro_identifier"]
+        val retroIdentifier = request.queryParameters["retro_identifier"]?.toRetroID()
         val messageUserId = request.queryParameters["message_user_id"]?.toLongOrNull()
         val retroUserId = request.queryParameters["retro_user_id"]?.toLongOrNull()
 
@@ -138,7 +138,7 @@ class DatabaseEndpoints
                         "Empty"
                     } else {
                         result.map {
-                            "${it.identifier} | ${it.text}"
+                            "${it.identifier.rawValue} | ${it.text}"
                         }.joinToString("\n")
                     }
                 }
@@ -159,7 +159,7 @@ class DatabaseEndpoints
     {
         context.logger.info("httpMethod " + request.httpMethod)
         val text = request.queryParameters["text"]
-        val retroIdentifier = request.queryParameters["retro_identifier"]
+        val retroIdentifier = request.queryParameters["retro_identifier"]?.toRetroID()
         val userId = request.queryParameters["user_id"]?.toLongOrNull()
         val result = if (text != null && retroIdentifier != null && userId != null) {
             try {
@@ -189,7 +189,7 @@ class DatabaseEndpoints
                  context: ExecutionContext): HttpResponseMessage
     {
         context.logger.info("httpMethod " + request.httpMethod)
-        val identifier = request.queryParameters["identifier"]
+        val identifier = request.queryParameters["identifier"]?.toRetroID()
         val userId = request.queryParameters["user_id"]?.toLongOrNull()
         val result = if (identifier != null && userId != null) {
             try {
