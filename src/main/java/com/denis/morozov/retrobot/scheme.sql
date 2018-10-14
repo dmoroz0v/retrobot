@@ -8,14 +8,14 @@ DROP TABLE Retros;
 
 CREATE TABLE Retros(
   identifier varchar(36) NOT NULL,
-  name varchar(50) NOT NULL,
+  name nvarchar(128) NOT NULL,
   user_id BIGINT NOT NULL,
   deleted int NOT NULL
 );
 
 CREATE TABLE Messages(
   identifier varchar(36) NOT NULL,
-  text text NOT NULL,
+  text nvarchar(2048) NOT NULL,
   user_id BIGINT NOT NULL,
   retro_identifier varchar(36) NOT NULL
 );

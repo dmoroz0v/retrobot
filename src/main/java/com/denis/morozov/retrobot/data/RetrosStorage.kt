@@ -1,6 +1,7 @@
 package com.denis.morozov.retrobot.data
 
 import com.denis.morozov.retrobot.database.DatabaseConnection
+import com.denis.morozov.retrobot.database.condition.And
 import com.denis.morozov.retrobot.database.condition.Equal
 import com.denis.morozov.retrobot.database.condition.Or
 import com.denis.morozov.retrobot.database.condition.Relationship
@@ -23,9 +24,12 @@ class RetrosStorage(private val connection: DatabaseConnection)
         joinDescriptor.table = "Retros_Users"
         joinDescriptor.on = Relationship("Retros.identifier", "Retros_Users.retro_identifier")
         selectDescriptor.joins = listOf(joinDescriptor)
-        selectDescriptor.where = Or(
-                Equal("Retros.user_id", userId),
-                Equal("Retros_Users.user_id", userId)
+        selectDescriptor.where = And(
+                Or(
+                    Equal("Retros.user_id", userId),
+                    Equal("Retros_Users.user_id", userId)
+                ),
+                Equal("Retros.deleted", 0)
         )
 
         val result  = connection.select(selectDescriptor)

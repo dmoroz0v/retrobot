@@ -14,39 +14,25 @@ class MessagesStorage(private val connection: DatabaseConnection)
         val selectDescriptor = SelectDescriptor()
         selectDescriptor.table = "Messages"
 
-        val joins: MutableList<JoinDescriptor> = mutableListOf()
-
-        val retrosJoinDescriptor = JoinDescriptor()
-        retrosJoinDescriptor.type = JoinDescriptor.Type.INNER
-        retrosJoinDescriptor.table = "Retros"
-        retrosJoinDescriptor.on = And(
-                Relationship("Retros.identifier", "Messages.retro_identifier"),
-                Equal("Retros.identifier", retroIdentifier.rawValue)
-        )
-
-        joins.add(retrosJoinDescriptor)
-
         if (retroUserId != null) {
             val joinDescriptor = JoinDescriptor()
-            joinDescriptor.type = JoinDescriptor.Type.LEFT
-            joinDescriptor.table = "Retros_Users"
-            joinDescriptor.on = Relationship("Retros.identifier", "Retros_Users.retro_identifier")
-            joins.add(joinDescriptor)
+            joinDescriptor.type = JoinDescriptor.Type.INNER
+            joinDescriptor.table = "Retros"
+            joinDescriptor.on = And(
+                    Relationship("Retros.identifier", "Messages.retro_identifier"),
+                    Equal("Retros.user_id", retroUserId)
+            )
+            selectDescriptor.joins = listOf(joinDescriptor)
         }
 
-        selectDescriptor.joins = joins
+        val where: ArrayList<ConditionDescriptor> = ArrayList()
+        where.add(Equal("Messages.retro_identifier", retroIdentifier.rawValue))
 
-        val orConditions: ArrayList<ConditionDescriptor> = ArrayList()
         if (messageUserId != null) {
-            orConditions.add(Equal("Messages.userId", messageUserId))
-        }
-        if (retroUserId != null) {
-            orConditions.add(Equal("Retros.userId", retroUserId))
+            where.add(Equal("Messages.user_id", messageUserId))
         }
 
-        if (orConditions.isNotEmpty()) {
-            selectDescriptor.where = Or(*orConditions.toTypedArray())
-        }
+        selectDescriptor.where = And(*where.toTypedArray())
 
         val result  = connection.select(selectDescriptor)
 
