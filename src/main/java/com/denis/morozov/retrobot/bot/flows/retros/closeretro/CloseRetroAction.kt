@@ -7,16 +7,17 @@ import com.denis.morozov.retrobot.core.flow.FlowAction
 class CloseRetroAction(val context: CloseRetroContext,
                        val database: Database): FlowAction {
 
-    override fun execute(userId: Long): String {
+    override fun execute(userId: Long): List<String> {
         return database.connect().use {
             val retrosStorage = RetrosStorage(it)
 
-            if (retrosStorage.retro(context.retroId!!)?.userId != userId) {
-                return "Retro not found"
+            val text = if (retrosStorage.retro(context.retroId!!)?.userId != userId) {
+                "Retro not found"
+            } else {
+                retrosStorage.delete(context.retroId!!)
+                "Retro was closed"
             }
-
-            retrosStorage.delete(context.retroId!!)
-            "Retro was closed"
+            listOf(text)
         }
     }
 }

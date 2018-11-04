@@ -1,26 +1,24 @@
 package com.denis.morozov.retrobot.bot
 
-import com.denis.morozov.retrobot.telegram.ReplyKeyboardHide
-import com.denis.morozov.retrobot.telegram.SendMessage
-import com.denis.morozov.retrobot.core.command.Command
-import com.denis.morozov.retrobot.core.command.CommandHandler
-import com.denis.morozov.retrobot.core.database.Database
-import com.denis.morozov.retrobot.core.flow.FlowController
 import com.denis.morozov.retrobot.bot.flows.messages.addmessage.AddMessageFlowAssembly
 import com.denis.morozov.retrobot.bot.flows.messages.messages.MessagesFlowAssembly
 import com.denis.morozov.retrobot.bot.flows.retros.closeretro.CloseRetroFlowAssembly
 import com.denis.morozov.retrobot.bot.flows.retros.createretro.CreateRetroFlowAssembly
 import com.denis.morozov.retrobot.bot.flows.retros.joinretro.JoinRetroFlowAssembly
 import com.denis.morozov.retrobot.bot.flows.retros.myretros.MyRetrosFlowAssembly
+import com.denis.morozov.retrobot.bot.flows.retros.shareretro.ShareRetroFlowAssembly
+import com.denis.morozov.retrobot.core.Bot
+import com.denis.morozov.retrobot.core.command.Command
+import com.denis.morozov.retrobot.core.command.CommandHandler
+import com.denis.morozov.retrobot.core.database.Database
 import com.denis.morozov.retrobot.core.flow.services.canceloperation.CancelOperationFlowAssembly
 
-class Bot(connectionString: String) {
+class BotAssembly(private val token: String,
+                  private val connectionString: String) {
 
-    private val commandsHandlers: List<CommandHandler>
-    private val database = Database(connectionString)
-
-    init {
-        commandsHandlers = listOf(
+    fun bot(): Bot {
+        val database = Database(connectionString)
+        val commandsHandlers: List<CommandHandler> = listOf(
                 CommandHandler(Command("/myretros"),
                         "Print all you created and joined retros",
                         MyRetrosFlowAssembly(database)),
@@ -44,29 +42,12 @@ class Bot(connectionString: String) {
                         AddMessageFlowAssembly(database)),
                 CommandHandler(Command("/cancel"),
                         "Cancel current operation",
-                        CancelOperationFlowAssembly())
+                        CancelOperationFlowAssembly()),
+                CommandHandler(Command("/shareretro"),
+                        "Share retro",
+                        ShareRetroFlowAssembly(database))
         )
-    }
 
-    fun update(chatId: Long, userId: Long, text: String): SendMessage {
-
-        val flowController = FlowController(database, userId, commandsHandlers)
-
-        if (text.startsWith("/")) {
-            flowController.start(Command(text))
-        } else {
-            flowController.restore()
-        }
-
-        val result = flowController.handleUpdate(text)
-
-        if (result.finished) {
-            flowController.clear()
-        } else {
-            flowController.store()
-        }
-
-        return SendMessage(chatId, result.text, result.keyboard
-                ?: ReplyKeyboardHide(true))
+        return Bot(token, database, commandsHandlers)
     }
 }

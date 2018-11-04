@@ -1,6 +1,6 @@
 package com.denis.morozov.retrobot.core.flow
 
-import com.denis.morozov.retrobot.telegram.ReplyKeyboardMarkup
+import com.denis.morozov.retrobot.core.telegram.ReplyKeyboardMarkup
 import com.denis.morozov.retrobot.core.Storable
 
 class Flow(private val inputHandlers: Array<FlowInputHandler>,
@@ -9,9 +9,13 @@ class Flow(private val inputHandlers: Array<FlowInputHandler>,
 
     data class Result(
             val finished: Boolean,
-            val text: String,
-            val keyboard: ReplyKeyboardMarkup? = null
-    )
+            val texts: List<String>,
+            val keyboard: ReplyKeyboardMarkup? = null) {
+
+        constructor(finished: Boolean,
+                    text: String,
+                    keyboard: ReplyKeyboardMarkup? = null) : this(finished, listOf(text), keyboard)
+    }
 
     private var inputStep: Int = -1
 
@@ -25,7 +29,7 @@ class Flow(private val inputHandlers: Array<FlowInputHandler>,
 
         return if (inputStep < inputHandlers.size) {
             val inputMarkup = inputHandlers[inputStep].inputMarkup(userId)
-            Result(inputMarkup.interrupt, inputMarkup.text, inputMarkup.keyboard)
+            Result(inputMarkup.interrupt, inputMarkup.texts, inputMarkup.keyboard)
         } else {
             Result(true, action.execute(userId), null)
         }

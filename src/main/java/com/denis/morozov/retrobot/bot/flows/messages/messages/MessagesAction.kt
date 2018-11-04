@@ -9,14 +9,14 @@ class MessagesAction(private val database: Database,
                      private val context: MessagesContext,
                      private val allMessages: Boolean): FlowAction {
 
-    override fun execute(userId: Long): String {
+    override fun execute(userId: Long): List<String> {
         return database.connect().use {
             val retroUserId: Long? = if (allMessages) userId else null
             val messageUserId: Long? = if (!allMessages) userId else null
             val messages = MessagesStorage(it).messages(context.retroId!!, messageUserId, retroUserId)
             val retro = RetrosStorage(it).retro(context.retroId!!)
 
-            if (retro != null) {
+            val text = if (retro != null) {
                 if (messages.isEmpty()) {
                     "'${retro.name}' not have messages"
                 } else {
@@ -26,6 +26,7 @@ class MessagesAction(private val database: Database,
             } else {
                 "Unexpected error"
             }
+            listOf(text)
         }
     }
 }

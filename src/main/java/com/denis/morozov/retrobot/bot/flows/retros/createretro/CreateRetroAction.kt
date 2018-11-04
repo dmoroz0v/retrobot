@@ -7,10 +7,10 @@ import com.denis.morozov.retrobot.core.flow.FlowAction
 class CreateRetroAction(val context: CreateRetroContext,
                         val database: Database): FlowAction {
 
-    override fun execute(userId: Long): String {
+    override fun execute(userId: Long): List<String> {
         return database.connect().use {
             RetrosStorage(it).create(context.name!!, userId)
-            "Retro was created"
+            listOf("Retro was created")
         }
     }
 }

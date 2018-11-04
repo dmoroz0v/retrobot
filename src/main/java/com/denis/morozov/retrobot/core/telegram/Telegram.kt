@@ -1,4 +1,4 @@
-package com.denis.morozov.retrobot.telegram
+package com.denis.morozov.retrobot.core.telegram
 
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory

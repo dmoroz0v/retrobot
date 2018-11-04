@@ -7,10 +7,10 @@ import com.denis.morozov.retrobot.core.flow.FlowAction
 class JoinRetroAction(val context: JoinRetroContext,
                       val database: Database): FlowAction {
 
-    override fun execute(userId: Long): String {
+    override fun execute(userId: Long): List<String> {
         return database.connect().use {
             RetrosStorage(it).join(userId, context.retroId!!)
-            "You was joined to retro"
+            listOf("You was joined to retro")
         }
     }
 }

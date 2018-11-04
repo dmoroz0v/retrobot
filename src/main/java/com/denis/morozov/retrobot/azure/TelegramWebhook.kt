@@ -1,6 +1,6 @@
 package com.denis.morozov.retrobot.azure
 
-import com.denis.morozov.retrobot.bot.BotController
+import com.denis.morozov.retrobot.bot.BotAssembly
 import com.microsoft.azure.functions.annotation.*
 import com.microsoft.azure.functions.*
 
@@ -15,10 +15,9 @@ class TelegramWebhook
                 context: ExecutionContext): HttpResponseMessage
     {
         try {
-            val botController =  BotController(TOKEN, CONNECTION_STRING)
-            botController.update(request.body)
-        } catch (e: Exception) {
-        }
+            val bot = BotAssembly(TOKEN, CONNECTION_STRING).bot()
+            bot.update(request.body)
+        } catch (e: Exception) { }
 
         return request.createResponseBuilder(HttpStatus.OK).build()
     }

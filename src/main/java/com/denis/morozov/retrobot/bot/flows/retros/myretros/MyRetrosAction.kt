@@ -6,39 +6,47 @@ import com.denis.morozov.retrobot.core.flow.FlowAction
 
 class MyRetrosAction(val database: Database): FlowAction {
 
-    override fun execute(userId: Long): String {
+    override fun execute(userId: Long): List<String> {
         return database.connect().use { databaseConnection ->
             val retros = RetrosStorage(databaseConnection).retros(userId)
+
+            // own retros
+
             val myOwnRetrosHeader = "My own retros:\n\n"
             val myOwnRetros = retros.filter { it.userId == userId }
+
+            var myOwnRetrosString = ""
+
+            myOwnRetrosString += myOwnRetrosHeader
+
+            if (myOwnRetros.isNotEmpty()) {
+                myOwnRetrosString += myOwnRetros.map {
+                    (myOwnRetros.indexOf(it) + 1).toString() + ". " + it.name
+                }.joinToString("\n")
+            } else {
+                myOwnRetrosString += "You not have own retros"
+            }
+
+            // joined retros
+
             val myJoinedRetrosHeader = "My joined retros:\n\n"
             val myJoinedRetros = retros.filter { it.userId != userId }
 
-            var result = ""
+            var myJoinedRetrosString = ""
 
-            result += myOwnRetrosHeader
-
-            if (myOwnRetros.isNotEmpty()) {
-                result += myOwnRetros.map {
-                    "name: ${it.name}\nidentifier: ${it.identifier.rawValue}"
-                }.joinToString("\n---------\n")
-            } else {
-                result += "You not have own retros"
-            }
-
-            result += "\n\n\n"
-
-            result += myJoinedRetrosHeader
+            myJoinedRetrosString += myJoinedRetrosHeader
 
             if (myJoinedRetros.isNotEmpty()) {
-                result += myJoinedRetros.map {
-                    "name: ${it.name}\nidentifier: ${it.identifier.rawValue}"
-                }.joinToString("\n---------\n")
+                myJoinedRetrosString += myJoinedRetros.map {
+                    (myJoinedRetros.indexOf(it) + 1).toString() + ". " + it.name
+                }.joinToString("\n")
             } else {
-                result += "You not have joined retros"
+                myJoinedRetrosString += "You not have joined retros"
             }
 
-            result
+            // result
+
+            listOf(myOwnRetrosString, myJoinedRetrosString)
         }
     }
 }

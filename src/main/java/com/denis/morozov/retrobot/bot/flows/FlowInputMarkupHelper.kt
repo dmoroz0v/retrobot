@@ -1,7 +1,7 @@
 package com.denis.morozov.retrobot.bot.flows
 
-import com.denis.morozov.retrobot.telegram.KeyboardButton
-import com.denis.morozov.retrobot.telegram.ReplyKeyboardMarkup
+import com.denis.morozov.retrobot.core.telegram.KeyboardButton
+import com.denis.morozov.retrobot.core.telegram.ReplyKeyboardMarkup
 import com.denis.morozov.retrobot.bot.data.Retro
 import com.denis.morozov.retrobot.bot.data.RetrosStorage
 import com.denis.morozov.retrobot.core.database.Database

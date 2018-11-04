@@ -4,7 +4,7 @@ import com.denis.morozov.retrobot.core.flow.FlowAction
 
 class CancelOperationAction: FlowAction {
 
-    override fun execute(userId: Long): String {
-        return "Current operation was cancelled"
+    override fun execute(userId: Long): List<String> {
+        return listOf("Current operation was cancelled")
     }
 }

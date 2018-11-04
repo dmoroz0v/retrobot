@@ -8,7 +8,7 @@ class RetroIdInputHandler(val database: Database,
                           val context: JoinRetroContext): FlowInputHandler {
 
     override fun inputMarkup(userId: Long): FlowInputHandler.InputMarkup {
-        return FlowInputHandler.InputMarkup("Type retro id", null, false)
+        return FlowInputHandler.InputMarkup("Type share code", null, false)
     }
 
     override fun handle(userId: Long, text: String) {
