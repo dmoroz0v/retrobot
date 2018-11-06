@@ -9,8 +9,13 @@ class JoinRetroAction(val context: JoinRetroContext,
 
     override fun execute(userId: Long): List<String> {
         return database.connect().use {
-            RetrosStorage(it).join(userId, context.retroId!!)
-            listOf("You was joined to retro")
+            val retroId = context.retroId
+            if (retroId != null) {
+                RetrosStorage(it).join(userId, retroId)
+                listOf("You was joined to retro")
+            } else {
+                listOf("Unexpected error")
+            }
         }
     }
 }

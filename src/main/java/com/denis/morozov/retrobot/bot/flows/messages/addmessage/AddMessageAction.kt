@@ -11,13 +11,15 @@ class AddMessageAction(private val database: Database,
     override fun execute(userId: Long): List<String> {
         return database.connect().use {
             val userRetros = RetrosStorage(it).retros(userId)
-            val text = if (userRetros.firstOrNull { it.identifier == context.choiceRetroContext.retroId!! } != null) {
-                MessagesStorage(it).create(context.text!!, context.choiceRetroContext.retroId!!, userId)
+            val retroId = context.choiceRetroContext.retroId
+            val text = context.text
+            val result = if (retroId != null && text != null && userRetros.firstOrNull { it.identifier == retroId } != null) {
+                MessagesStorage(it).create(text, retroId, userId)
                 "Message was added"
             } else {
                 "Retro not found"
             }
-            listOf(text)
+            listOf(result)
         }
     }
 }

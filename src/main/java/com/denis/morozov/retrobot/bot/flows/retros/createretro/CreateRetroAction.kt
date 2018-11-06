@@ -9,8 +9,13 @@ class CreateRetroAction(val context: CreateRetroContext,
 
     override fun execute(userId: Long): List<String> {
         return database.connect().use {
-            RetrosStorage(it).create(context.name!!, userId)
-            listOf("Retro was created")
+            val name = context.name
+            if (name != null) {
+                RetrosStorage(it).create(name, userId)
+                listOf("Retro was created")
+            } else {
+                listOf("Unexpected error")
+            }
         }
     }
 }

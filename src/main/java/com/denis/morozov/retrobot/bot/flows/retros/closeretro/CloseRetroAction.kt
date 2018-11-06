@@ -12,10 +12,15 @@ class CloseRetroAction(val context: ChoiceRetroContext,
         return database.connect().use {
             val retrosStorage = RetrosStorage(it)
 
-            val text = if (retrosStorage.retro(context.retroId!!)?.userId != userId) {
+            val retroId = context.retroId
+            if (retroId == null) {
+                return listOf("Unexpected error")
+            }
+
+            val text = if (retrosStorage.retro(retroId)?.userId != userId) {
                 "Retro not found"
             } else {
-                retrosStorage.delete(context.retroId!!)
+                retrosStorage.delete(retroId)
                 "Retro was closed"
             }
             listOf(text)

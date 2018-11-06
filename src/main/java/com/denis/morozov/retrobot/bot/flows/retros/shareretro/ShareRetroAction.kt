@@ -10,7 +10,11 @@ class ShareRetroAction(val context: ChoiceRetroContext,
 
     override fun execute(userId: Long): List<String> {
         return database.connect().use {
-            val retro = RetrosStorage(it).retro(context.retroId!!)
+            val retroId = context.retroId
+            if (retroId == null) {
+                return listOf("Unexpected error")
+            }
+            val retro = RetrosStorage(it).retro(retroId)
             if (retro != null) {
                 val forwardMessage = "Forward two next messages for people"
                 val instructionMessage = "1. Open chat with @retrospectare_bot \n2. Call /joinretro command \n3. Paste code from next message"

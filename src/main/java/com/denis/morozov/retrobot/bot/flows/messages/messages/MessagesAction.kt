@@ -12,10 +12,14 @@ class MessagesAction(private val database: Database,
 
     override fun execute(userId: Long): List<String> {
         return database.connect().use {
+            val retroId = context.retroId
+            if (retroId == null) {
+                return listOf("Unexpected error")
+            }
             val retroUserId: Long? = if (allMessages) userId else null
             val messageUserId: Long? = if (!allMessages) userId else null
-            val messages = MessagesStorage(it).messages(context.retroId!!, messageUserId, retroUserId)
-            val retro = RetrosStorage(it).retro(context.retroId!!)
+            val messages = MessagesStorage(it).messages(retroId, messageUserId, retroUserId)
+            val retro = RetrosStorage(it).retro(retroId)
 
             val text = if (retro != null) {
                 if (messages.isEmpty()) {
