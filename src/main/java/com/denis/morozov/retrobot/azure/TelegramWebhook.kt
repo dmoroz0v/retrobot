@@ -10,7 +10,7 @@ class TelegramWebhook
     private val CONNECTION_STRING = ""
 
     @FunctionName("webhook")
-    fun webhook(@HttpTrigger(name = "req", methods = arrayOf(HttpMethod.POST), authLevel = AuthorizationLevel.ANONYMOUS)
+    fun webhook(@HttpTrigger(name = "req", methods = arrayOf(HttpMethod.POST), authLevel = AuthorizationLevel.FUNCTION)
                 request: HttpRequestMessage<String>,
                 context: ExecutionContext): HttpResponseMessage
     {
