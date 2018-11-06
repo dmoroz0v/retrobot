@@ -1,22 +1,28 @@
 package com.denis.morozov.retrobot.bot.flows.messages.addmessage
 
 import com.denis.morozov.retrobot.core.Storable
-import com.denis.morozov.retrobot.bot.data.Retro
+import com.denis.morozov.retrobot.bot.flows.ChoiceRetroContext
 
-class AddMessageContext(var retroId: Retro.ID? = null,
-                        var text: String? = null): Storable {
+class AddMessageContext(var text: String? = null): Storable {
+
+    val choiceRetroContext = ChoiceRetroContext()
 
     override fun store(): Storable.Container? {
         val container = Storable.Container()
-        container.setString(retroId?.rawValue, "retroId")
         container.setString(text, "text")
+
+        choiceRetroContext.store()?.let {
+            container.setContainer(it, "choiceRetroContext")
+        }
+
         return container
     }
 
     override fun restore(container: Storable.Container) {
-        container.stringValue("retroId")?.let {
-            retroId = Retro.ID(it)
-        }
         text = container.stringValue("text")
+
+        container.container("choiceRetroContext")?.let {
+            choiceRetroContext.restore(it)
+        }
     }
 }

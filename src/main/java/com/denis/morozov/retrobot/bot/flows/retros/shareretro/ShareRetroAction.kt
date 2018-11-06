@@ -1,10 +1,11 @@
 package com.denis.morozov.retrobot.bot.flows.retros.shareretro
 
 import com.denis.morozov.retrobot.bot.data.RetrosStorage
+import com.denis.morozov.retrobot.bot.flows.ChoiceRetroContext
 import com.denis.morozov.retrobot.core.database.Database
 import com.denis.morozov.retrobot.core.flow.FlowAction
 
-class ShareRetroAction(val context: ShareRetroContext,
+class ShareRetroAction(val context: ChoiceRetroContext,
                        val database: Database): FlowAction {
 
     override fun execute(userId: Long): List<String> {

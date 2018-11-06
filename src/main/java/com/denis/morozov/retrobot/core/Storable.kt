@@ -7,6 +7,10 @@ interface Storable {
         private var ints: MutableMap<String, Int?> = mutableMapOf()
         private var containers: MutableMap<String, Container> = mutableMapOf()
 
+        fun allStringKyes(): List<String> {
+            return strings.keys.toList()
+        }
+
         fun setString(value: String?, key: String) {
             strings[key] = value
         }
